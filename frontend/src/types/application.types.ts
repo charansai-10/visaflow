@@ -97,17 +97,35 @@ export interface StatusHistoryCreate {
 
 // ── Tasks ─────────────────────────────────────────────────────────────────────
 
+// export interface Task {
+//   id:              string;
+//   application_id:  string;
+//   name:            string;
+//   description?:    string;
+//   sort_order:      number;
+//   is_completed:    boolean;
+//   completed_at?:   string;
+//   completed_by?:   string;
+//   created_at:      string;
+//   updated_at:      string;
+// }
+
 export interface Task {
-  id:              string;
-  application_id:  string;
-  name:            string;
-  description?:    string;
-  sort_order:      number;
-  is_completed:    boolean;
-  completed_at?:   string;
-  completed_by?:   string;
-  created_at:      string;
-  updated_at:      string;
+  id:                    string;
+  application_id:        string;
+  name:                  string;
+  description?:          string;
+  sort_order:            number;
+  is_completed:          boolean;
+  completed_at?:         string;
+  completed_by?:         string;
+  // ← document linked to this task (filled when user uploads)
+  document_id?:          string;
+  document_name?:        string;   // "passport_scan_2023.pdf"
+  document_size_bytes?:  number;   // raw bytes → formatted to "2.4 MB"
+  document_uploaded_at?: string;   // ISO datetime
+  created_at:            string;
+  updated_at:            string;
 }
 
 export interface TaskCreate {
