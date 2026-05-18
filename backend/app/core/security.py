@@ -1,0 +1,75 @@
+"""
+Security utilities:
+  - Password hashing (bcrypt via passlib)
+  - JWT access & refresh token creation/verification
+  - OTP generation and verification (TOTP / random 6-digit)
+"""
+import secrets
+import string
+from datetime import datetime, timedelta, timezone
+from typing import Any, Optional
+
+import pyotp
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
+from app.core.config import settings
+
+# ── Password ──────────────────────────────────────────────────────────────────
+_pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(plain: str) -> str:
+    return _pwd_ctx.hash(plain)
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return _pwd_ctx.verify(plain, hashed)
+
+
+# ── JWT ───────────────────────────────────────────────────────────────────────
+def _create_token(data: dict[str, Any], expires_delta: timedelta) -> str:
+    payload = data.copy()
+    payload["exp"] = datetime.now(timezone.utc) + expires_delta
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def create_access_token(subject: str, extra: Optional[dict] = None) -> str:
+    data = {"sub": subject, "type": "access"}
+    if extra:
+        data.update(extra)
+    return _create_token(data, timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+
+
+def create_refresh_token(subject: str) -> str:
+    data = {"sub": subject, "type": "refresh"}
+    return _create_token(data, timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS))
+
+from typing import Any, Dict
+from jose import jwt
+
+def decode_token(token: str) -> Dict[str, Any]:
+    """Decode and validate a JWT. Raises JWTError on failure."""
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    return payload
+
+
+# ── OTP (6-digit numeric, stateless random) ───────────────────────────────────
+def generate_otp(length: int = 6) -> str:
+    """Generate a cryptographically secure numeric OTP."""
+    return "".join(secrets.choice(string.digits) for _ in range(length))
+
+
+def hash_otp(otp: str) -> str:
+    """Hash an OTP for storage (same bcrypt pool)."""
+    return _pwd_ctx.hash(otp)
+
+
+def verify_otp(plain: str, hashed: str) -> bool:
+    """Verify a plain OTP against its stored hash."""
+    return _pwd_ctx.verify(plain, hashed)
+
+
+# ── Secure random token (for password reset links, etc.) ─────────────────────
+def generate_secure_token(nbytes: int = 32) -> str:
+    return secrets.token_urlsafe(nbytes)
