@@ -85,6 +85,7 @@ async def get_me(db: DBSession, current_user: Current_User):
 # ── Signup ────────────────────────────────────────────────────────────────────
 @router.post("/signup", response_model=TokenResponse, status_code=201)
 async def signup(body: SignupRequest, response: Response, db: DBSession) -> TokenResponse:
+    print(body)
     result = await service_signup(
         db,
         first_name        = body.first_name,

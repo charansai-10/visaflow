@@ -277,12 +277,6 @@ class UserRoleName(str):
     EMPLOYEE  = "employee"
     ATTORNEY  = "attorney"
 
-_role_name_enum = Enum(
-    "app_admin", "hr", "employee", "attorney",
-    name="user_role_name_enum"
-)
-
-
 # =============================================================================
 # TABLE 2 — roles
 # One row per role — seeded once, never inserted by users.
@@ -294,13 +288,8 @@ class Role(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     # ── Typed enum instead of free String ────────────────────────────────────
-    name = Column(
-        _role_name_enum,
-        nullable=False,
-        unique=True,
-    )
-    # Exactly one of: app_admin | hr | employee | attorney
-    # unique=True → only one row per role value
+    name        = Column(String(100), nullable=False, unique=True)
+    is_system   = Column(Boolean, default=False, nullable=False)
 
     description = Column(String(255), nullable=True)
     # Human-readable: "Employer HR Manager", "Immigration Attorney", etc.
@@ -360,37 +349,28 @@ class Role(Base):
 #   visa_types.manage     → add / edit visa types in master list      (admin only)
 # =============================================================================
 
-_permission_code_enum = Enum(
-    # users
-    "users.manage",
-    "users.view_all",
-    # applications
-    "applications.create",
-    "applications.view_own",
-    "applications.view_all",
-    "applications.update_status",
-    "applications.delete",
-    # documents
-    "documents.upload",
-    "documents.view_own",
-    "documents.view_all",
-    "documents.verify",
-    "documents.delete",
-    # messages
-    "messages.send",
-    "messages.view_all_threads",
-    # roles & permissions
-    "roles.manage",
-    "permissions.manage",
-    # support
-    "support.view_all_tickets",
-    "support.manage_tickets",
-    # content
-    "news.publish",
-    "deadlines.manage",
-    "visa_types.manage",
-    name="permission_code_enum"
-)
+
+class Permission(Base):
+    __tablename__ = "permissions"
+
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    #  Plain string instead of enum — allows custom permission codes
+    code        = Column(String(100), nullable=False, unique=True)
+    #  Plain string instead of enum — allows custom modules
+    module      = Column(String(50), nullable=False)
+    #  Flag to protect seeded permissions from deletion
+    is_system   = Column(Boolean, default=False, nullable=False)
+
+    description = Column(String(255), nullable=True)
+    created_by  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    modified_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    created_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
+                         onupdate=lambda: datetime.now(timezone.utc))
+
+    role_permissions = relationship("RolePermission", back_populates="permission",
+                                    cascade="all, delete-orphan")
 
 
 # =============================================================================
@@ -398,42 +378,41 @@ _permission_code_enum = Enum(
 # Master list of every permission in the system. Seeded once by admin.
 # =============================================================================
 
-class Permission(Base):
-    __tablename__ = "permissions"
+# class Permission(Base):
+#     __tablename__ = "permissions"
 
-    id   = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+#     id   = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    # ── Typed enum — the actual permission code ───────────────────────────────
-    code = Column(
-        _permission_code_enum,
-        nullable=False,
-        unique=True,
-    )
-    # e.g. "documents.verify", "applications.update_status"
-    # unique=True → one row per code, no duplicates
+#     # ── Typed enum — the actual permission code ───────────────────────────────
+#     code = Column(
+#         _permission_code_enum,
+#         nullable=False,
+#         unique=True,
+#     )
+#     # e.g. "documents.verify", "applications.update_status"
+#     # unique=True → one row per code, no duplicates
 
-    module = Column(
-        Enum(
-            "users", "applications", "documents",
-            "messages", "roles", "support", "content",
-            name="permission_module_enum"
-        ),
-        nullable=False,
-    )
-    # Groups permissions in the admin UI by module
+#     module = Column(
+#         Enum(
+#             "users", "applications", "documents",
+#             "messages", "roles", "support", "content",
+#             name="permission_module_enum"
+#         ),
+#         nullable=False,
+#     )
+#     # Groups permissions in the admin UI by module
 
-    description = Column(String(255), nullable=True)
-    # Human-readable: "Verify or reject any uploaded document"
+#     description = Column(String(255), nullable=True)
+#     # Human-readable: "Verify or reject any uploaded document"
 
-    created_by  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # nullable — seeded without a creator
-    modified_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    created_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+#     created_by  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # nullable — seeded without a creator
+#     modified_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+#     created_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+#     updated_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
-    # Relationships
-    role_permissions = relationship("RolePermission", back_populates="permission",
-                                    cascade="all, delete-orphan")
-
+#     # Relationships
+#     role_permissions = relationship("RolePermission", back_populates="permission",
+#                                     cascade="all, delete-orphan")
 
 # =============================================================================
 # TABLE 4 — role_permissions (junction)
@@ -845,13 +824,14 @@ class ApplicationTask(Base):
     # controls display order in the checklist
     completed_at     = Column(DateTime(timezone=True), nullable=True)
     completed_by     = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    document_id    = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=True)
 
     # Audit
     created_by  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     modified_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
-
+    document    = relationship("Document", foreign_keys=[document_id])
 
 # =============================================================================
 # TABLE 13 — document_types

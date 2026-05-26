@@ -1,15 +1,15 @@
 // src/api/applications.api.ts
-import type { VisaType } from "@/types/application.types";
+import type { VisaType } from "../types/application.types";
 import axios from "./axios";
 
 export const applicationsApi = {
 
   // GET /applications — list with KPI summary
   list: async (params?: {
-    status?: string;
+    status?:       string;
     visa_type_id?: string;
-    limit?: number;
-    offset?: number;
+    limit?:        number;
+    offset?:       number;
   }) => {
     const res = await axios.get("/applications", { params });
     return res.data;
@@ -23,9 +23,9 @@ export const applicationsApi = {
 
   // POST /applications — create new
   create: async (body: {
-    visa_type_id: string;
+    visa_type_id:      string;
     sponsor_employer?: string;
-    notes?: string;
+    notes?:            string;
   }) => {
     const res = await axios.post("/applications", body);
     return res.data;
@@ -39,9 +39,9 @@ export const applicationsApi = {
 
   // PATCH /applications/:id/status — change status
   updateStatus: async (id: string, body: {
-    status: string;
+    status:         string;
     current_stage?: string;
-    note?: string;
+    note?:          string;
   }) => {
     const res = await axios.patch(`/applications/${id}/status`, body);
     return res.data;
@@ -67,20 +67,29 @@ export const applicationsApi = {
 
   // POST /applications/:id/tasks — create task
   createTask: async (appId: string, body: {
-    task_name: string;
+    task_name:    string;
     description?: string;
     is_required?: boolean;
-    sort_order?: number;
+    sort_order?:  number;
   }) => {
     const res = await axios.post(`/applications/${appId}/tasks`, body);
     return res.data;
   },
 
   // PATCH /applications/:id/tasks/:taskId/complete
-  completeTask: async (appId: string, taskId: string, is_completed: boolean) => {
+  // FIX — now sends document_id so backend can link the uploaded doc to the task
+  completeTask: async (
+    appId:       string,
+    taskId:      string,
+    is_completed: boolean,
+    document_id?: string,      // ← ADD — links uploaded document to task
+  ) => {
     const res = await axios.patch(
       `/applications/${appId}/tasks/${taskId}/complete`,
-      { is_completed }
+      {
+        is_completed,
+        ...(document_id ? { document_id } : {}),   // only send if present
+      }
     );
     return res.data;
   },
@@ -90,21 +99,29 @@ export const applicationsApi = {
     const res = await axios.get(`/visa-types/${id}`);
     return res.data;
   },
-  
-  // In applicationsApi object
+
+  // POST /documents/upload — multipart upload
   uploadDocument: async (formData: FormData) => {
-  const res = await axios.post("/documents/upload", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+    const res = await axios.post("/documents/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return res.data;
   },
 };
 
-// ── Named exports ─────────────────────────────────────────────────────────────
-export const listApplications  = (params?: Parameters<typeof applicationsApi.list>[0])      => applicationsApi.list(params);
-export const getApplication    = (id: string)                                                => applicationsApi.get(id);
-export const listTasks         = (applicationId: string)                                     => applicationsApi.getTasks(applicationId);
-export const listStatusHistory = (applicationId: string)                                     => applicationsApi.getStatusHistory(applicationId);
+// ── Named exports ──────────────────────────────────────────────────────────────
+export const listApplications  = (params?: Parameters<typeof applicationsApi.list>[0]) =>
+  applicationsApi.list(params);
+
+export const getApplication    = (id: string) =>
+  applicationsApi.get(id);
+
+export const listTasks         = (applicationId: string) =>
+  applicationsApi.getTasks(applicationId);
+
+export const listStatusHistory = (applicationId: string) =>
+  applicationsApi.getStatusHistory(applicationId);
+
 export async function createApplication(body: {
   visa_type_id:      string;
   sponsor_employer?: string;
@@ -113,10 +130,22 @@ export async function createApplication(body: {
   const res = await axios.post("/applications", body);
   return res.data;
 }
-export const completeTask      = (appId: string, taskId: string, is_completed: boolean)      => applicationsApi.completeTask(appId, taskId, is_completed);
-export const createTask        = (appId: string, body: Parameters<typeof applicationsApi.createTask>[1]) => applicationsApi.createTask(appId, body);
-export const getVisaType       = (id: string)                                                => applicationsApi.getVisaType(id);
-export const uploadDocument = (formData: FormData)                                          =>applicationsApi.uploadDocument(formData);
+
+// FIX — now passes document_id through to API
+export const completeTask = (
+  appId:       string,
+  taskId:      string,
+  is_completed: boolean,
+  document_id?: string,        // ← ADD
+) => applicationsApi.completeTask(appId, taskId, is_completed, document_id);
+
+export const createTask = (
+  appId: string,
+  body:  Parameters<typeof applicationsApi.createTask>[1],
+) => applicationsApi.createTask(appId, body);
+
+export const getVisaType     = (id: string)    => applicationsApi.getVisaType(id);
+export const uploadDocument  = (fd: FormData)  => applicationsApi.uploadDocument(fd);
 
 export async function listVisaTypes(): Promise<VisaType[]> {
   const res = await axios.get("/visa-types");

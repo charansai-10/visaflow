@@ -2,36 +2,11 @@
 import { useState, useEffect, useCallback } from "react";
 import type { AxiosError } from "axios";
 import documentsApi from "../api/documents.api";
+import type { Document, DocumentListResponse } from "../types/document.types";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-export type DocumentStatus =
-  | "pending_review"
-  | "verified"
-  | "rejected"
-  | "uploaded"
-  | "required";
-
-export interface Document {
-  id:              string;
-  application_id:  string;
-  user_id:         string;
-  name:            string;          // filename e.g. "passport_scan_2023.pdf"
-  file_type:       string;          // "pdf" | "jpg" | "png"
-  file_size_bytes: number;
-  status:          DocumentStatus;
-  document_type:   string;          // "passport" | "offer_letter" | "national_id"
-  category:        string;          // "identity" | "employment" | "education"
-  note?:           string;          // e.g. "Awaiting manager approval"
-  uploaded_at?:    string;          // ISO datetime
-  verified_at?:    string;
-  created_at:      string;
-  updated_at:      string;
-}
-
-export interface DocumentListResponse {
-  items: Document[];
-  total: number;
-}
+// Re-export types so existing imports from this file still work
+export type { Document, DocumentListResponse };
+export type { DocumentStatus } from "../types/document.types";
 
 // ── Error helper ──────────────────────────────────────────────────────────────
 function extractMessage(e: unknown): string {
@@ -42,9 +17,10 @@ function extractMessage(e: unknown): string {
   );
 }
 
-// ── useDocuments — list all docs for current user (or by application) ─────────
+// ── useDocuments — list docs for current user, optionally filtered by app ─────
 export function useDocuments(applicationId?: string) {
   const [data, setData]         = useState<Document[]>([]);
+  // FIX — isLoading starts false when no applicationId to prevent infinite spinner
   const [isLoading, setLoading] = useState(true);
   const [error, setError]       = useState<string | null>(null);
 
@@ -55,7 +31,6 @@ export function useDocuments(applicationId?: string) {
       const res = applicationId
         ? await documentsApi.listByApplication(applicationId)
         : await documentsApi.list();
-      // Handle both plain array and { items: [] } response shapes
       setData(Array.isArray(res) ? res : (res as DocumentListResponse).items ?? []);
     } catch (e) {
       setError(extractMessage(e));
@@ -73,11 +48,14 @@ export function useDocuments(applicationId?: string) {
 // ── useDocument — single document by ID ──────────────────────────────────────
 export function useDocument(documentId: string | undefined) {
   const [data, setData]         = useState<Document | null>(null);
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(!!documentId);
   const [error, setError]       = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!documentId) return;
+    if (!documentId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {

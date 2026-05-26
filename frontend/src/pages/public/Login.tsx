@@ -712,7 +712,7 @@ async function handleSSOSuccess(provider: string, token: string) {
 
               {/* Sign In button */}
               <button type="button" onClick={handleLogin} disabled={loading}
-                className="w-full h-[52px] rounded-[12px] flex items-center justify-center gap-3 text-white font-semibold text-base tracking-[-0.5px] leading-6 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full h-[52px] rounded-[12px] flex items-center justify-center gap-3 text-white font-semibold text-base tracking-[-0.5px] leading-6 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
                   background: loading ? "#9ca3af" : "linear-gradient(to right, #2563eb, #9333ea)",
                   boxShadow: "0px 10px 7.5px rgba(0,0,0,0.1), 0px 4px 3px rgba(0,0,0,0.1)",

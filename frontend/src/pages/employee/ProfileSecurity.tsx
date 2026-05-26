@@ -1,6 +1,6 @@
 // src/pages/employee/ProfileSecurity.tsx
 import { useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Edit2, Upload, Trash2, Save, RotateCcw,
   CheckCircle, XCircle, Smartphone, Laptop, Tablet,
@@ -126,6 +126,10 @@ const PersonalInfoSection = () => {
   const user        = useAuthStore((s) => s.user);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Routing — return to caller page after save ────────────────────────────
+  const navigate     = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [editing,     setEditing]     = useState(false);
   const [saving,      setSaving]      = useState(false);
   const [error,       setError]       = useState<string | null>(null);
@@ -176,6 +180,12 @@ const PersonalInfoSection = () => {
       });
       await refetch();
       setEditing(false);
+
+      // ── Navigate back to wherever the user came from (e.g. /applications/new)
+      const returnTo = searchParams.get("returnTo");
+      if (returnTo) {
+        navigate(returnTo);
+      }
     } catch {
       setError("Failed to save changes. Please try again.");
     } finally {

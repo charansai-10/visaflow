@@ -5,82 +5,109 @@
 # =============================================================================
 
 ROLES_SEED = [
-    {"name": "app_admin", "description": "Full system administrator. Can manage users, roles, visa types, content, and support.", "is_active": True},
-    {"name": "hr",        "description": "Employer HR Manager. Manages applications and documents for their company's employees.", "is_active": True},
-    {"name": "attorney",  "description": "Immigration Attorney. Manages assigned cases, verifies documents, updates status.", "is_active": True},
-    {"name": "employee",  "description": "Visa Applicant. Manages their own applications, uploads documents, tracks progress.", "is_active": True},
+    {"name":"app_admin","description": "Full system administrator. Can manage users, roles, visa types, content, and support.","is_active":True,"is_system":True,},
+    {"name":"hr","description": "Employer HR Manager. Manages applications and documents for their company's employees.","is_active":True,"is_system":True,},
+    {"name":"attorney","description": "Immigration Attorney. Manages assigned cases, verifies documents, updates status.","is_active": True,"is_system": True,},
+    {"name":"employee","description": "Visa Applicant. Manages their own applications, uploads documents, tracks progress.","is_active":True,"is_system":True,},
 ]
-
 PERMISSIONS_SEED = [
-    # ── users ─────────────────────────────────────────────────────────────────
-    {"code": "users.manage",      "module": "users",        "description": "Create, suspend, and delete any user account"},
-    {"code": "users.view_all",    "module": "users",        "description": "List and search all users in the system"},
-    # ── applications ──────────────────────────────────────────────────────────
-    {"code": "applications.create",        "module": "applications", "description": "Start a new visa application"},
-    {"code": "applications.view_own",      "module": "applications", "description": "View own applications only"},
-    {"code": "applications.view_all",      "module": "applications", "description": "View all applications in the system"},
-    {"code": "applications.update_status", "module": "applications", "description": "Change application status and current stage"},
-    {"code": "applications.delete",        "module": "applications", "description": "Permanently delete a draft application"},
-    # ── documents ─────────────────────────────────────────────────────────────
-    {"code": "documents.upload",    "module": "documents", "description": "Upload a new document file"},
-    {"code": "documents.view_own",  "module": "documents", "description": "Download and view own documents"},
-    {"code": "documents.view_all",  "module": "documents", "description": "View and download any user's documents"},
-    {"code": "documents.verify",    "module": "documents", "description": "Mark a document as verified or rejected"},
-    {"code": "documents.delete",    "module": "documents", "description": "Permanently delete a document"},
-    # ── messages ──────────────────────────────────────────────────────────────
-    {"code": "messages.send",              "module": "messages", "description": "Send messages in any thread"},
-    {"code": "messages.view_all_threads",  "module": "messages", "description": "View every message thread in the system"},
-    # ── roles & permissions ───────────────────────────────────────────────────
-    {"code": "roles.manage",       "module": "roles", "description": "Create, edit, and deactivate roles"},
-    {"code": "permissions.manage", "module": "roles", "description": "Assign and revoke permissions from roles"},
-    # ── support ───────────────────────────────────────────────────────────────
-    {"code": "support.view_all_tickets", "module": "support", "description": "View all support tickets regardless of submitter"},
-    {"code": "support.manage_tickets",   "module": "support", "description": "Reply, reassign, and close support tickets"},
-    # ── content ───────────────────────────────────────────────────────────────
-    {"code": "news.publish",        "module": "content", "description": "Publish and unpublish news articles"},
-    {"code": "deadlines.manage",    "module": "content", "description": "Create, edit, and close application deadlines"},
-    {"code": "visa_types.manage",   "module": "content", "description": "Add and edit visa types in the master list"},
+    # dashboard
+    {"code": "dashboard.view_own",       "module": "dashboard", "description": "View own role dashboard",                     "is_system": True},
+    {"code": "dashboard.view_analytics", "module": "dashboard", "description": "View analytics and workspace dashboards",      "is_system": True},
+    # applications
+    {"code": "applications.create",        "module": "applications", "description": "Start a new visa application",           "is_system": True},
+    {"code": "applications.view_own",      "module": "applications", "description": "View own applications only",             "is_system": True},
+    {"code": "applications.view_all",      "module": "applications", "description": "View all applications in the system",    "is_system": True},
+    {"code": "applications.update_status", "module": "applications", "description": "Change application status and stage",    "is_system": True},
+    {"code": "applications.delete",        "module": "applications", "description": "Permanently delete a draft application", "is_system": True},
+    # documents
+    {"code": "documents.upload",        "module": "documents", "description": "Upload a new document file",               "is_system": True},
+    {"code": "documents.view_own",      "module": "documents", "description": "View own documents only",                  "is_system": True},
+    {"code": "documents.view_all",      "module": "documents", "description": "View and download any user documents",     "is_system": True},
+    {"code": "documents.verify",        "module": "documents", "description": "Mark a document verified or rejected",     "is_system": True},
+    {"code": "documents.delete",        "module": "documents", "description": "Permanently delete a document",            "is_system": True},
+    {"code": "documents.manage_rules",  "module": "documents", "description": "Configure document rules engine",          "is_system": True},
+    # users
+    {"code": "users.view_own_profile",  "module": "users", "description": "View and edit own profile & security",        "is_system": True},
+    {"code": "users.view_all",          "module": "users", "description": "List and search all users",                   "is_system": True},
+    {"code": "users.manage",            "module": "users", "description": "Create, suspend, and delete any user",        "is_system": True},
+    # roles
+    {"code": "roles.manage",       "module": "roles", "description": "Create, edit, and deactivate roles",               "is_system": True},
+    {"code": "permissions.manage", "module": "roles", "description": "Assign and revoke permissions from roles",         "is_system": True},
+    # visa_types
+    {"code": "visa_types.view",    "module": "visa_types", "description": "Browse available visa types",                 "is_system": True},
+    {"code": "visa_types.manage",  "module": "visa_types", "description": "Add and edit visa types in the master list",  "is_system": True},
+    # messages
+    {"code": "messages.send",             "module": "messages", "description": "Send messages in any thread",            "is_system": True},
+    {"code": "messages.view_all_threads", "module": "messages", "description": "View every message thread",              "is_system": True},
+    # notifications
+    {"code": "notifications.view",              "module": "notifications", "description": "Receive and view notifications",        "is_system": True},
+    {"code": "notifications.manage_templates",  "module": "notifications", "description": "Create and edit notification templates", "is_system": True},
+    # support
+    {"code": "support.view_own_tickets",  "module": "support", "description": "View own support tickets",                "is_system": True},
+    {"code": "support.view_all_tickets",  "module": "support", "description": "View all support tickets",                "is_system": True},
+    {"code": "support.manage_tickets",    "module": "support", "description": "Reply, reassign, and close tickets",      "is_system": True},
+    # content
+    {"code": "news.publish",         "module": "content", "description": "Publish and unpublish news articles",          "is_system": True},
+    {"code": "deadlines.manage",     "module": "content", "description": "Create and edit application deadlines",        "is_system": True},
+    {"code": "content.manage_guides","module": "content", "description": "Manage interview guides and onboarding flows", "is_system": True},
+    # reports  ← NEW from Figma
+    {"code": "reports.view_own",  "module": "reports", "description": "View own activity reports",                       "is_system": True},
+    {"code": "reports.view_all",  "module": "reports", "description": "View all system reports and audit logs",          "is_system": True},
+    {"code": "reports.export",    "module": "reports", "description": "Export reports to PDF or CSV",                    "is_system": True},
+    # settings  ← NEW from Figma
+    {"code": "settings.view",    "module": "settings", "description": "View system settings",                            "is_system": True},
+    {"code": "settings.manage",  "module": "settings", "description": "Modify system settings and security config",      "is_system": True},
+    {"code": "billing.manage",   "module": "settings", "description": "Manage subscriptions, pricing, and billing",      "is_system": True},
 ]
 
 # Role → list of permission codes it receives
 ROLE_PERMISSIONS_SEED = {
-    "app_admin": [
-        # All 21 permissions
-        "users.manage", "users.view_all",
-        "applications.create", "applications.view_own", "applications.view_all",
-        "applications.update_status", "applications.delete",
-        "documents.upload", "documents.view_own", "documents.view_all",
-        "documents.verify", "documents.delete",
-        "messages.send", "messages.view_all_threads",
-        "roles.manage", "permissions.manage",
-        "support.view_all_tickets", "support.manage_tickets",
-        "news.publish", "deadlines.manage", "visa_types.manage",
-    ],
+    "app_admin": [p["code"] for p in PERMISSIONS_SEED],  # all 35 permissions
+
     "hr": [
-        "users.view_all",
+        "dashboard.view_own",
         "applications.create", "applications.view_own", "applications.view_all",
         "applications.update_status",
         "documents.upload", "documents.view_own", "documents.view_all",
         "documents.verify", "documents.delete",
+        "users.view_own_profile", "users.view_all",
+        "visa_types.view",
         "messages.send", "messages.view_all_threads",
-        "support.view_all_tickets", "support.manage_tickets",
+        "notifications.view",
+        "support.view_own_tickets", "support.view_all_tickets", "support.manage_tickets",
         "deadlines.manage",
+        "reports.view_own", "reports.view_all", "reports.export",
     ],
+
     "attorney": [
+        "dashboard.view_own",
         "applications.create", "applications.view_own", "applications.view_all",
         "applications.update_status",
         "documents.upload", "documents.view_own", "documents.view_all",
         "documents.verify",
+        "users.view_own_profile",
+        "visa_types.view",
         "messages.send",
+        "notifications.view",
+        "support.view_own_tickets",
         "deadlines.manage",
+        "reports.view_own",
+        "content.manage_guides",
     ],
+
     "employee": [
+        "dashboard.view_own",
         "applications.create", "applications.view_own",
         "documents.upload", "documents.view_own",
+        "users.view_own_profile",
+        "visa_types.view",
         "messages.send",
+        "notifications.view",
+        "support.view_own_tickets",
+        "news.publish",          # read news
     ],
 }
-
 
 # =============================================================================
 # SEED DATA — visa_types
