@@ -28,13 +28,13 @@ interface SidebarProps {
   onToggleCollapse: () => void;
 }
 
-function formatRole(role?: string): string {
-  if (!role) return 'Employee';
-  return role
-    .split('_')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
-}
+// function formatRole(role?: string): string {
+//   if (!role) return 'Employee';
+//   return role
+//     .split('_')
+//     .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+//     .join(' ');
+// }
 
 export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const { user, roles, clearAuth: logout } = useAuthStore();
@@ -44,7 +44,7 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
   const firstName = user?.first_name ?? '';
   const lastName  = user?.last_name  ?? '';
   const fullName  = `${firstName} ${lastName}`.trim() || 'User';
-  const roleLabel = formatRole(roles?.[0]);
+  // const roleLabel = formatRole(roles?.[0]);
 
   const handleLogout = () => {
     logout();
@@ -117,12 +117,12 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
                 collapsed ? 'lg:w-0 lg:opacity-0' : 'lg:w-auto lg:opacity-100',
               ].join(' ')}
             >
-              <p className="text-[14px] font-semibold text-[#0f172a] tracking-[-0.5px] whitespace-nowrap leading-[18px]">
+              <p className="text-[18px] font-semibold text-[#0f172a] tracking-[-0.5px] whitespace-nowrap leading-[18px]">
                 {fullName}
               </p>
-              <p className="text-[12px] text-[#64748b] tracking-[-0.5px] whitespace-nowrap leading-[16px] mt-0.5">
+              {/* <p className="text-[12px] text-[#64748b] tracking-[-0.5px] whitespace-nowrap leading-[16px] mt-0.5">
                 {roleLabel}
-              </p>
+              </p> */}
             </div>
           </div>
         </div>

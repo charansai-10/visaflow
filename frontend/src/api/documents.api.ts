@@ -10,28 +10,7 @@ const documentsApi = {
     return Array.isArray(res.data) ? res.data : res.data.items ?? [];
   },
 
-
-  // documents.api.ts — getFile function
-  getFile: async (id: string): Promise<{
-    blob:        Blob;
-    fileName:    string;
-    contentType: string;
-  }> => {
-    const res = await axios.get(`/documents/${id}/view`, {
-      responseType: "blob",
-    });
-
-    // ← Cast to string — axios headers are typed as mixed union
-    const disposition = String(res.headers["content-disposition"] ?? "");
-    const contentType = String(res.headers["content-type"] ?? "");
-
-    const nameMatch = disposition.match(/filename[^;=\n]*=["']?([^"';\n]+)["']?/);
-    const fileName  = nameMatch?.[1]?.trim() ?? "document";
-
-    return { blob: res.data, fileName, contentType };
-  },
-  
-  // GET /documents?application_id=xxx — docs for a specific application
+  // GET /documents?application_id=xxx
   listByApplication: async (applicationId: string): Promise<Document[]> => {
     const res = await axios.get("/documents", {
       params: { application_id: applicationId },
@@ -43,6 +22,18 @@ const documentsApi = {
   get: async (id: string): Promise<Document> => {
     const res = await axios.get(`/documents/${id}`);
     return res.data;
+  },
+
+  // GET /documents/:id/view — serve file inline for viewing (matches backend endpoint)
+  getFile: async (id: string): Promise<{ blob: Blob; fileName: string; contentType: string }> => {
+    const res = await axios.get(`/documents/${id}/view`, {
+      responseType: "blob",
+    });
+    const disposition = String(res.headers["content-disposition"] ?? "");
+    const contentType = String(res.headers["content-type"] ?? "application/octet-stream");
+    const nameMatch   = disposition.match(/filename[^;=\n]*=["']?([^"';\n]+)["']?/);
+    const fileName    = nameMatch?.[1]?.trim() ?? "document";
+    return { blob: res.data, fileName, contentType };
   },
 
   // POST /documents/upload — multipart upload
@@ -68,7 +59,7 @@ const documentsApi = {
     await axios.delete(`/documents/${id}`);
   },
 
-  // PATCH /documents/:id/status — update status (attorney/HR action)
+  // PATCH /documents/:id/status
   updateStatus: async (id: string, status: string, note?: string): Promise<Document> => {
     const res = await axios.patch(`/documents/${id}/status`, { status, note });
     return res.data;
@@ -77,5 +68,3 @@ const documentsApi = {
 
 export default documentsApi;
 export type { Document, DocumentListResponse };
-
-

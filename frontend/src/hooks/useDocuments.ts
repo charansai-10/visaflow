@@ -20,7 +20,7 @@ function extractMessage(e: unknown): string {
 // ── useDocuments — list docs for current user, optionally filtered by app ─────
 export function useDocuments(applicationId?: string) {
   const [data, setData]         = useState<Document[]>([]);
-  // FIX — isLoading starts false when no applicationId to prevent infinite spinner
+  // isLoading starts true only when we have something to fetch
   const [isLoading, setLoading] = useState(true);
   const [error, setError]       = useState<string | null>(null);
 

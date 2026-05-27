@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.schemas.document import DocumentListResponse, DocumentResponse
-from app.services.document_service import get_document_file_url, list_documents, upload_document
+from app.services.document_service import get_document_by_id, get_document_file_url, list_documents, upload_document
 
 document_router = APIRouter()
 
@@ -77,4 +77,20 @@ async def api_view_document(
         media_type = media_type,
         filename   = doc["file_name"],
         headers    = {"Content-Disposition": "inline"},  # ← inline = show in browser, not download
+    )
+
+@document_router.get(
+    "/documents/{document_id}",
+    response_model=DocumentResponse,
+    summary="Get document by ID",
+)
+async def api_get_document_by_id(
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user),
+) -> DocumentResponse:
+    return await get_document_by_id(
+        db=db,
+        current_user_id=current_user.user_id,
+        document_id=document_id,
     )

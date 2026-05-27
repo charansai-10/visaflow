@@ -5,15 +5,15 @@ export type DocStatus   = "verified" | "pending_review" | "uploaded" | "rejected
 
 export interface HubDocument {
   id:              string;
-  name:            string;           // file_name
-  file_type:       DocFileType;      // derived from file_format
+  name:            string;
+  file_type:       DocFileType;
   status:          DocStatus;
-  document_type:   string;           // e.g. "Passport Copy"
-  category:        string;           // e.g. "identity"
-  application_name?: string;         // e.g. "H-1B Visa Application"
+  document_type:   string;
+  category:        string;
+  application_name?: string;
   application_id?: string;
   file_size_bytes: number;
-  uploaded_at:     string;           // ISO date
+  uploaded_at:     string;
   verified_at?:    string;
 }
 
@@ -25,17 +25,26 @@ export interface RequirementItem {
 }
 
 export interface HubRequirements {
-  visa_code:    string;              // "H-1B"
-  done:         number;
-  total:        number;
-  items:        RequirementItem[];
+  application_id: string;        // ← ADD — which app these tasks belong to
+  visa_code:      string;
+  done:           number;
+  total:          number;
+  items:          RequirementItem[];
+}
+
+// ← ADD — one tab per application the user has
+export interface ApplicationTab {
+  id:        string;             // application UUID
+  label:     string;             // shown in tab e.g. "H-1B"
+  visa_code: string;             // e.g. "H-1B"
+  status:    string;             // "draft" | "in_progress" | "submitted" etc.
 }
 
 export interface ActivityItem {
   id:        string;
-  text:      string;                 // "Updated_Resume_v2.docx uploaded"
-  by:        string;                 // "Alexandra Smith"
-  timestamp: string;                 // ISO
+  text:      string;
+  by:        string;
+  timestamp: string;
 }
 
 export interface StorageInfo {
@@ -44,9 +53,10 @@ export interface StorageInfo {
 }
 
 export interface DocumentHubData {
-  documents:    HubDocument[];
-  requirements: HubRequirements | null;
-  activity:     ActivityItem[];
-  storage:      StorageInfo;
-  total:        number;
+  documents:       HubDocument[];
+  requirements:    HubRequirements | null;
+  activity:        ActivityItem[];
+  storage:         StorageInfo;
+  total:           number;
+  applicationTabs: ApplicationTab[];   // ← ADD
 }

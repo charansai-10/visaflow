@@ -154,3 +154,67 @@ async def get_document_file_url(
         "file_path": doc.file_path,       # local path or S3 key
         "file_format": doc.file_format,   # "jpg", "png", "pdf"
     }
+
+async def get_document_by_id(
+    db: AsyncSession,
+    current_user_id: uuid.UUID,
+    document_id: uuid.UUID,
+) -> DocumentResponse:
+    """
+    GET /documents/{document_id}
+    """
+
+    result = await db.execute(
+        select(Document)
+        .options(joinedload(Document.document_type))
+        .where(Document.id == document_id)
+    )
+
+    document = result.scalars().first()
+
+    # Not found
+    if not document:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found",
+        )
+
+    # Security check
+    if document.user_id != current_user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Access denied",
+        )
+
+    return DocumentResponse(
+        id=document.id,
+        user_id=document.user_id,
+        application_id=document.application_id,
+        document_type_id=document.document_type_id,
+
+        # frontend-friendly mapping
+        name=document.file_name,
+        file_size_bytes=document.file_size_kb * 1024,
+        file_type=document.file_format,
+
+        status=document.status,
+
+        document_type=(
+            document.document_type.name
+            if document.document_type
+            else None
+        ),
+
+        category=(
+            document.document_type.category
+            if document.document_type
+            else None
+        ),
+
+        uploaded_at=document.created_at,
+        verified_at=document.verified_at,
+        rejection_reason=document.rejection_reason,
+        total_pages=document.total_pages,
+        ocr_status=document.ocr_status,
+        version=document.version,
+    )
