@@ -20,9 +20,14 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    allowedHosts: ['.ngrok-free.dev','.ngrok-free.app',],
-    proxy: {                                      
+    allowedHosts: ['.ngrok-free.dev', '.ngrok-free.app'],
+    proxy: {
       '/api': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/static': {
         target: 'http://localhost:8001',
         changeOrigin: true,
         secure: false,

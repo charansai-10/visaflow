@@ -21,6 +21,7 @@ async def send_email(to: str, subject: str, body: str) -> None:
     message["To"]      = to
     message["Subject"] = subject
     message.attach(MIMEText(body, "plain"))
+    print("sai")
 
     # ✅ FIX: trusted SSL certificates
     ssl_context = ssl.create_default_context(cafile=certifi.where())
@@ -33,6 +34,40 @@ async def send_email(to: str, subject: str, body: str) -> None:
         password = settings.SMTP_PASSWORD,
         start_tls = True,
         tls_context = ssl_context,   # ⭐ THIS LINE FIXES YOUR ERROR
+    )
+
+
+async def send_invitation_email(
+    to_email: str,
+    invite_token: str,
+    company_name: str,
+    hr_name: str,
+    personal_message: str | None = None,
+) -> None:
+    invite_link = f"{settings.FRONTEND_URL}/accept-invite?token={invite_token}"
+
+    subject = f"Invitation to join {company_name} on VisaFlow"
+
+    body = f"""
+    Hi,
+
+    {hr_name} has invited you to join {company_name} on VisaFlow.
+
+    Invite link:
+    {invite_link}
+
+    {personal_message or ""}
+
+    This invite link will expire soon.
+
+    Thanks,
+    VisaFlow Team
+    """.strip()
+
+    await send_email(
+        to=to_email,
+        subject=subject,
+        body=body,
     )
 
 # =============================================================================

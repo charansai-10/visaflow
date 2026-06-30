@@ -14,21 +14,23 @@ from app.core.exceptions import register_exception_handlers
 # ✅ IMPORTANT: ensure all models are loaded
 from app.models.visamodels import *
 
-from app.routes import auth, onboarding
-from app.routes.document import document_router
-from app.routes.application import application_router,application_task_router,application_history_router
-from app.services.seeddata_service import  seed_document_types, seed_fee_templates, seed_rbac, seed_subscription_plans, seed_support_articles, seed_system_settings, seed_visa_types
-from app.routes.visa_types import visa_type_router
-from app.routes.dashboard import dashboard_router
-from app.routes.user_profile import user_profile_router
-from app.routes.login_history import login_history_router
+from app.routes.employee import onboarding
+from app.routes.employee.document import document_router
+from app.routes.employee.application import application_router,application_task_router,application_history_router
+from app.routes.employee import auth
+from app.services.employee.deadline_scheduler import start_deadline_scheduler
+from app.services.employee.seeddata_service import  seed_document_types, seed_fee_templates, seed_rbac, seed_subscription_plans, seed_support_articles, seed_system_settings, seed_visa_types
+from app.routes.employee.visa_types import visa_type_router
+from app.routes.employee.dashboard import dashboard_router
+from app.routes.employee.user_profile import user_profile_router
+from app.routes.employee.login_history import login_history_router
 from app.routes.admin.admin_dashboard import admin_dashboard_router
-from app.routes.ocr_service import ocr_router
-from app.routes.roles import roles_router
-from app.routes.payment_routes import payment_router
+from app.routes.employee.ocr_service import ocr_router
+from app.routes.employee.roles import roles_router
+from app.routes.employee.payment_routes import payment_router
 from app.routes.attorney.attorney_routes import attorney_router
-from app.routes.consultation_routes import consultation_router
-from app.routes.notification_routes import notification_router
+from app.routes.employee.consultation_routes import consultation_router
+from app.routes.employee.notification_routes import notification_router
 from app.routes.admin.roles import roles_router
 from app.routes.admin.custom_roles import custom_roles_router
 # from app.routes.user_management import user_management_router
@@ -43,8 +45,16 @@ from app.routes.admin.admin_support import admin_support_router
 from app.routes.attorney.intake import intake_router
 from app.routes.attorney.analytics import analytics_router
 from app.routes.attorney.calendar import calendar_router
+from app.routes.employee.message import message_router
 
+# hr routes
+from app.routes.hr.invitation_routes import invitation_router
+from app.routes.hr.hr_case_routes import hr_case_router
+from app.routes.hr.hr_task_routes import hr_task_router
+from app.routes.hr.hr_document_routes import hr_document_router
 
+from app.routes.hr.hr_deadline_routes  import hr_deadline_router
+from app.routes.hr.hr_approval_routes  import hr_approval_router
 
 
 
@@ -72,7 +82,10 @@ async def lifespan(app: FastAPI):
         await seed_fee_templates(db)         # fee_templates
         await seed_system_settings(db)       # system_settings
         await seed_support_articles(db)      # support_articles
-        
+    
+    # ✅ ADD THIS — start deadline notification scheduler
+    scheduler = start_deadline_scheduler()
+
     yield
     print("🛑 Shutting down...")
     await engine.dispose()
@@ -149,8 +162,15 @@ app.include_router(admin_support_router, prefix="/api/v1")
 app.include_router(intake_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 app.include_router(calendar_router, prefix="/api/v1")
+app.include_router(message_router, prefix="/api/v1", tags=["Messages"])
 
-
+# Hr Routes
+app.include_router(invitation_router, prefix="/api/v1",tags=["HR Invitation"])
+app.include_router(hr_case_router, prefix="/api/v1/hr", tags=["HR Cases"])
+app.include_router(hr_task_router, prefix="/api/v1/hr", tags=["HR Tasks"])
+app.include_router(hr_document_router, prefix="/api/v1/hr", tags=["HR Documents"])
+app.include_router(hr_deadline_router, prefix="/api/v1/hr", tags=["HR Deadlines"])
+app.include_router(hr_approval_router, prefix="/api/v1/hr", tags=["HR Approvals"])
 
 
 

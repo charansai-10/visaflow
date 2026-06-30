@@ -39,10 +39,16 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # ----- AWS -------
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION: str
+    S3_BUCKET: str
+    STORAGE_BACKEND: str = "local"   # "local" for dev, "s3" for production
+    
     # ── CORS ──────────────────────────────────────────────────────────────────
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
     COOKIE_SECURE: bool = True 
-
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors(cls, v):
@@ -82,6 +88,7 @@ class Settings(BaseSettings):
     ZOHO_ORG_ID: str
     ZOHO_WORKSPACE_ID: str
 
+    FRONTEND_URL: str 
 settings = Settings()
 
 

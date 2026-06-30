@@ -36,8 +36,10 @@ export interface TokenPayload {
   refresh_token: string;
   token_type:    string;
   roles:         string[];
+  profile:         string | null;
+  theme_color: string | null;
   user:User
-  onboarding_step:number
+  // onboarding_step:number
 }
 
 export interface SignupBody {

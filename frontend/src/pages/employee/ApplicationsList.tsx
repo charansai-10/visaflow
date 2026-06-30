@@ -1,9 +1,9 @@
 // src/pages/employee/ApplicationsList.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useApplications } from "../../hooks/useApplications";
+import { useApplications } from "../../hooks/employee/useApplications";
 import { useCurrentUser } from "../../hooks/useAuth";
-import type { Application, ApplicationStatus } from "../../types/application.types";
+import type { Application, ApplicationStatus } from "../../types/employee/application.types";
 import { Search, Plus, Bell } from "lucide-react";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
@@ -199,7 +199,7 @@ export default function ApplicationsList() {
                   onChange={e => { setStatusFilter(e.target.value as ApplicationStatus | ""); setPage(1); }}
                   className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] h-[37px] pl-[8px] pr-[32px]
                              text-[#334155] text-[14px] tracking-[-0.5px] appearance-none
-                             focus:outline-none focus:border-[#3a46e5] cursor-pointer"
+                             focus:outline-none focus:border-indigo-600 cursor-pointer"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   <option value="">All Statuses</option>
@@ -225,7 +225,7 @@ export default function ApplicationsList() {
                   onChange={e => { setVisaFilter(e.target.value); setPage(1); }}
                   className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] h-[37px] pl-[8px] pr-[32px]
                              text-[#334155] text-[14px] tracking-[-0.5px] appearance-none
-                             focus:outline-none focus:border-[#3a46e5] cursor-pointer"
+                             focus:outline-none focus:border-indigo-600 cursor-pointer"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   <option value="">All Types</option>
@@ -251,7 +251,7 @@ export default function ApplicationsList() {
                   onChange={e => { setSortBy(e.target.value); setPage(1); }}
                   className="bg-white border border-[#e2e8f0] rounded-[8px] h-[37px] pl-[8px] pr-[32px]
                              text-[#334155] text-[14px] tracking-[-0.5px] appearance-none
-                             focus:outline-none focus:border-[#3a46e5] cursor-pointer"
+                             focus:outline-none focus:border-indigo-600 cursor-pointer"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   <option value="newest">Date Modified (Newest)</option>
@@ -269,7 +269,7 @@ export default function ApplicationsList() {
             {/* Loading */}
             {isLoading && (
               <div className="flex items-center justify-center py-[64px]">
-                <svg className="w-8 h-8 animate-spin text-[#3a46e5]" fill="none" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 animate-spin text-indigo-600" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
@@ -310,65 +310,79 @@ export default function ApplicationsList() {
                       <div
                         key={app.id}
                         onClick={() => navigate(`/applications/${app.id}`)}
-                        className={`grid grid-cols-[1.2fr_1fr_1fr_1fr_80px] h-[73px] items-center
-                                    px-[24px] cursor-pointer hover:bg-[#f8fafc] transition-colors
+                        className={`cursor-pointer hover:bg-[#f8fafc] transition-colors
                                     ${i > 0 ? "border-t border-[#f1f5f9]" : ""}`}
                       >
-                        {/* Applicant / ID */}
-                        <div className="flex items-center gap-[12px]">
+                        {/* ── Mobile card (< sm) ── */}
+                        <div className="flex sm:hidden items-start gap-[12px] px-[16px] py-[14px]">
                           <div className="bg-[#f0f5ff] flex items-center justify-center rounded-full shrink-0 size-[40px]">
-                            <span className="text-[#3a46e5] text-[14px] font-bold tracking-[-0.5px] leading-[20px]">
-                              {userInitials}
+                            <span className="text-indigo-600 text-[14px] font-bold tracking-[-0.5px]">{userInitials}</span>
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
+                            <div className="flex items-center justify-between gap-[8px]">
+                              <div className="min-w-0">
+                                <p className="text-[#0f172a] text-[14px] font-bold tracking-[-0.5px] truncate">{fullName}</p>
+                                <p className="text-[#64748b] text-[11px] tracking-[-0.5px]">{app.application_number}</p>
+                              </div>
+                              <img src={imgChevronRight} alt="" className="w-[8px] h-[12px] shrink-0" />
+                            </div>
+                            <div className="flex items-center justify-between gap-[8px]">
+                              <div className="flex items-center gap-[5px] min-w-0">
+                                <img src={visaIcon} alt="" className="w-[12px] h-[12px] shrink-0" />
+                                <span className="text-[#334155] text-[12px] font-medium tracking-[-0.5px] truncate">
+                                  {app.visa_type?.name ?? "—"}
+                                </span>
+                              </div>
+                              <span className={`${badge.bg} ${badge.border} ${badge.text}
+                                               inline-flex items-center gap-[5px] shrink-0
+                                               px-[8px] py-[3px] rounded-[6px]
+                                               text-[11px] font-medium whitespace-nowrap`}>
+                                <img src={badge.icon} alt="" className="w-[8px] h-[9px]" />
+                                {badge.label}
+                              </span>
+                            </div>
+                            <p className="text-[#94a3b8] text-[11px] tracking-[-0.5px]">{dt.date} · {dt.time}</p>
+                          </div>
+                        </div>
+
+                        {/* ── Desktop table row (sm+) ── */}
+                        <div className="hidden sm:grid sm:grid-cols-[1.2fr_1fr_1fr_80px] lg:grid-cols-[1.2fr_1fr_1fr_1fr_80px]
+                                        min-h-[64px] items-center py-[8px] px-[24px]">
+                          <div className="flex items-center gap-[12px]">
+                            <div className="bg-[#f0f5ff] flex items-center justify-center rounded-full shrink-0 size-[40px]">
+                              <span className="text-indigo-600 text-[14px] font-bold tracking-[-0.5px]">{userInitials}</span>
+                            </div>
+                            <div className="flex flex-col gap-[2px]">
+                              <span className="text-[#0f172a] text-[14px] font-bold tracking-[-0.5px] whitespace-nowrap">{fullName}</span>
+                              <span className="text-[#64748b] text-[12px] tracking-[-0.5px] whitespace-nowrap">{app.application_number}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-[8px]">
+                            <img src={visaIcon} alt="" className="w-[14px] h-[14px] shrink-0" />
+                            <span className="text-[#334155] text-[14px] font-medium tracking-[-0.5px] whitespace-nowrap">
+                              {app.visa_type?.name ?? "—"}
                             </span>
                           </div>
                           <div className="flex flex-col gap-[2px]">
-                            <span className="text-[#0f172a] text-[14px] font-bold tracking-[-0.5px] leading-[20px] whitespace-nowrap">
-                              {fullName}
-                            </span>
-                            <span className="text-[#64748b] text-[12px] font-normal tracking-[-0.5px] leading-[16px] whitespace-nowrap">
-                              {app.application_number}
+                            <span className="text-[#0f172a] text-[14px] font-medium tracking-[-0.5px] whitespace-nowrap">{dt.date}</span>
+                            <span className="text-[#64748b] text-[12px] tracking-[-0.5px] whitespace-nowrap">{dt.time}</span>
+                          </div>
+                          <div>
+                            <span className={`${badge.bg} ${badge.border} ${badge.text}
+                                             inline-flex items-center gap-[6px] h-[26px]
+                                             pl-[11px] pr-[10px] rounded-[6px]
+                                             text-[12px] font-medium tracking-[-0.5px] whitespace-nowrap`}>
+                              <img src={badge.icon} alt="" className="w-[9px] h-[10px] shrink-0" />
+                              {badge.label}
                             </span>
                           </div>
-                        </div>
-
-                        {/* Visa Category */}
-                        <div className="flex items-center gap-[8px]">
-                          <img src={visaIcon} alt="" className="w-[14px] h-[14px] object-contain shrink-0" />
-                          <span className="text-[#334155] text-[14px] font-medium tracking-[-0.5px] leading-[20px] whitespace-nowrap">
-                            {app.visa_type?.name ?? "—"}
-                          </span>
-                        </div>
-
-                        {/* Submission Date */}
-                        <div className="flex flex-col gap-[2px]">
-                          <span className="text-[#0f172a] text-[14px] font-medium tracking-[-0.5px] leading-[20px] whitespace-nowrap">
-                            {dt.date}
-                          </span>
-                          <span className="text-[#64748b] text-[12px] font-normal tracking-[-0.5px] leading-[16px] whitespace-nowrap">
-                            {dt.time}
-                          </span>
-                        </div>
-
-                        {/* Status badge */}
-                        <div>
-                          <span className={`${badge.bg} ${badge.border} ${badge.text}
-                                           inline-flex items-center gap-[6px] h-[26px]
-                                           pl-[11px] pr-[10px] py-[5px] rounded-[6px]
-                                           text-[12px] font-medium tracking-[-0.5px] leading-[16px] whitespace-nowrap`}>
-                            <img src={badge.icon} alt="" className="w-[9px] h-[10px] object-contain shrink-0" />
-                            {badge.label}
-                          </span>
-                        </div>
-
-                        {/* Chevron action */}
-                        <div className="flex items-center justify-end">
-                          <button
-                            type="button"
-                            onClick={e => { e.stopPropagation(); navigate(`/applications/${app.id}`); }}
-                            className="flex items-center justify-center w-[25px] h-[36px] rounded-[8px] hover:bg-[#f1f5f9] transition-colors"
-                          >
-                            <img src={imgChevronRight} alt="→" className="w-[8.75px] h-[14px] object-contain" />
-                          </button>
+                          <div className="flex items-center justify-end">
+                            <button type="button"
+                              onClick={e => { e.stopPropagation(); navigate(`/applications/${app.id}`); }}
+                              className="flex items-center justify-center w-[25px] h-[36px] rounded-[8px] hover:bg-[#f1f5f9] transition-colors">
+                              <img src={imgChevronRight} alt="→" className="w-[8.75px] h-[14px]" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -443,4 +457,4 @@ export default function ApplicationsList() {
       </main>
     </div>
   );
-} 
+}

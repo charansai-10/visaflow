@@ -1,8 +1,8 @@
 // src/pages/employee/DocumentHub.tsx
 import { useRef, useState } from "react";
 import { useNavigate }      from "react-router-dom";
-import { useDocumentHub }   from "../../hooks/useDocumentHub";
-import type { HubDocument, RequirementItem } from "../../types/documentHub.types";
+import { useDocumentHub }   from "../../hooks/employee/useDocumentHub";
+import type { HubDocument, RequirementItem } from "../../types/employee/documentHub.types";
 
 import imgUpload      from "../../assets/icons/appdetail-upload-cloud.svg";
 import imgPdf         from "../../assets/icons/docup-pdf-icon.svg";
@@ -72,7 +72,7 @@ function DocCard({ doc }: { doc: HubDocument }) {
   const navigate = useNavigate();
   return (
     <div onClick={() => doc.id && navigate(`/documents/viewer?doc_id=${doc.id}`)}
-         className="bg-white border border-[#f1f5f9] rounded-[16px] shadow-[0px_1px_4px_rgba(0,0,0,0.04)] flex flex-col gap-[12px] p-[20px] cursor-pointer hover:border-[#6366f1]/30 hover:shadow-[0px_4px_16px_rgba(99,102,241,0.08)] transition-all duration-200">
+         className="bg-white border border-[#f1f5f9] rounded-[16px] shadow-[0px_1px_4px_rgba(0,0,0,0.04)] flex flex-col gap-[12px] p-[20px] cursor-pointer hover:border-indigo-600/30 hover:shadow-[0px_4px_16px_rgba(99,102,241,0.08)] transition-all duration-200">
       <div className="flex items-start justify-between">
         <img src={getFileIcon(doc.file_type)} alt={doc.file_type} className="w-[44px] h-[52px] object-contain" />
         <span className="text-[#94a3b8] text-[11px] font-semibold tracking-[0.5px] uppercase">{getFileLabel(doc.file_type)}</span>
@@ -122,7 +122,7 @@ function ReqItem({ item, onUpload }: { item: RequirementItem; onUpload: (id: str
       {isMissing && (
         <button onClick={e => { e.stopPropagation(); onUpload(item.id); }}
                 className="mt-[4px] w-full h-[28px] rounded-[7px] text-white text-[12px] font-medium hover:opacity-90 transition"
-                style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
+                style={{ background: "linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-gradient-end) 100%)" }}>
           Upload Now
         </button>
       )}
@@ -181,14 +181,14 @@ export default function DocumentHub() {
         <div className="flex items-center gap-[4px] overflow-x-auto">
           {/* All Documents — always first */}
           <button onClick={() => setActiveFilter("all")}
-                  className={`px-[14px] py-[6px] rounded-full text-[13px] font-medium whitespace-nowrap transition-colors ${activeFilter === "all" ? "bg-[#6366f1] text-white" : "text-[#64748b] hover:bg-[#f1f5f9]"}`}>
+                  className={`px-[14px] py-[6px] rounded-full text-[13px] font-medium whitespace-nowrap transition-colors ${activeFilter === "all" ? "bg-indigo-600 text-white" : "text-[#64748b] hover:bg-[#f1f5f9]"}`}>
             All Documents
           </button>
 
           {/* One tab per real application */}
           {applicationTabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveFilter(tab.id)}
-                    className={`px-[14px] py-[6px] rounded-full text-[13px] font-medium whitespace-nowrap transition-colors flex items-center gap-[5px] ${activeFilter === tab.id ? "bg-[#6366f1] text-white" : "text-[#64748b] hover:bg-[#f1f5f9]"}`}>
+                    className={`px-[14px] py-[6px] rounded-full text-[13px] font-medium whitespace-nowrap transition-colors flex items-center gap-[5px] ${activeFilter === tab.id ? "bg-indigo-600 text-white" : "text-[#64748b] hover:bg-[#f1f5f9]"}`}>
               {tab.label}
               <span className={`size-[6px] rounded-full inline-block ${tabDot(tab.status)} ${activeFilter === tab.id ? "opacity-70" : ""}`} />
             </button>
@@ -204,7 +204,7 @@ export default function DocumentHub() {
               <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
             <input type="text" placeholder="Search documents..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                   className="pl-[34px] pr-[12px] py-[7px] text-[13px] bg-[#f8fafc] border border-[#f1f5f9] rounded-[10px] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/20 transition w-[200px]"
+                   className="pl-[34px] pr-[12px] py-[7px] text-[13px] bg-[#f8fafc] border border-[#f1f5f9] rounded-[10px] focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-500/20 transition w-[200px]"
                    style={{ fontFamily: "Inter, sans-serif" }} />
           </div>
 
@@ -214,7 +214,7 @@ export default function DocumentHub() {
             <div className="flex flex-col gap-[2px]">
               <div className="bg-[#e2e8f0] rounded-full h-[4px] w-[80px] overflow-hidden">
                 <div className="h-full rounded-full transition-all duration-500"
-                     style={{ width: `${storagePct}%`, background: storagePct > 80 ? "linear-gradient(90deg,#ef4444,#f97316)" : "linear-gradient(90deg,#6366f1,#8b5cf6)" }} />
+                     style={{ width: `${storagePct}%`, background: storagePct > 80 ? "linear-gradient(90deg,#ef4444,#f97316)" : "linear-gradient(90deg, var(--theme-primary), var(--theme-gradient-end))" }} />
               </div>
               <span className="text-[10px] text-[#94a3b8] whitespace-nowrap">Storage: {usedLabel}</span>
             </div>
@@ -241,11 +241,11 @@ export default function DocumentHub() {
             <div className="bg-white border border-[#f1f5f9] rounded-[16px] shadow-[0px_1px_4px_rgba(0,0,0,0.04)] p-[24px]">
               <div className="flex items-center justify-between mb-[16px]">
                 <h2 className="text-[#0f172a] text-[16px] font-bold tracking-[-0.3px]">Upload New Document</h2>
-                {/* <button className="text-[#6366f1] text-[13px] font-medium hover:underline">View Supported Formats</button> */}
+                {/* <button className="text-indigo-600 text-[13px] font-medium hover:underline">View Supported Formats</button> */}
                 <div className="relative group">
                   <button
                     type="button"
-                    className="text-[#6366f1] text-[13px] font-medium hover:underline"
+                    className="text-indigo-600 text-[13px] font-medium hover:underline"
                   >
                     View Supported Formats
                   </button>
@@ -297,14 +297,14 @@ export default function DocumentHub() {
                 </div>
               </div>
               <div onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={handleDrop} onClick={() => fileRef.current?.click()}
-                   className={`border-2 border-dashed rounded-[14px] flex flex-col items-center justify-center gap-[10px] py-[32px] cursor-pointer transition-all duration-200 ${dragging ? "border-[#6366f1] bg-[#f0f0ff]" : uploading ? "border-[#6366f1]/40 bg-[#fafafe]" : "border-[#e2e8f0] bg-[#fafafe] hover:border-[#6366f1]/60 hover:bg-[#f5f5ff]"}`}>
+                   className={`border-2 border-dashed rounded-[14px] flex flex-col items-center justify-center gap-[10px] py-[32px] cursor-pointer transition-all duration-200 ${dragging ? "border-indigo-600 bg-[#f0f0ff]" : uploading ? "border-indigo-600/40 bg-[#fafafe]" : "border-[#e2e8f0] bg-[#fafafe] hover:border-indigo-600/60 hover:bg-[#f5f5ff]"}`}>
                 {uploading ? (
                   <>
-                    <svg className="w-8 h-8 animate-spin text-[#6366f1]" fill="none" viewBox="0 0 24 24">
+                    <svg className="w-8 h-8 animate-spin text-indigo-600" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
-                    <p className="text-[#6366f1] text-[14px] font-medium">Uploading…</p>
+                    <p className="text-indigo-600 text-[14px] font-medium">Uploading…</p>
                   </>
                 ) : (
                   <>
@@ -334,10 +334,10 @@ export default function DocumentHub() {
                   )}
                 </div>
                 <div className="flex items-center gap-[2px]">
-                  <button onClick={() => setViewMode("list")} className={`p-[7px] rounded-[7px] transition ${viewMode === "list" ? "bg-[#6366f1]" : "text-[#94a3b8] hover:bg-[#f1f5f9]"}`}>
+                  <button onClick={() => setViewMode("list")} className={`p-[7px] rounded-[7px] transition ${viewMode === "list" ? "bg-indigo-600" : "text-[#94a3b8] hover:bg-[#f1f5f9]"}`}>
                     <img src={imgListView} alt="list" className={`w-[16px] h-[16px] ${viewMode === "list" ? "brightness-0 invert" : ""}`} />
                   </button>
-                  <button onClick={() => setViewMode("grid")} className={`p-[7px] rounded-[7px] transition ${viewMode === "grid" ? "bg-[#6366f1]" : "text-[#94a3b8] hover:bg-[#f1f5f9]"}`}>
+                  <button onClick={() => setViewMode("grid")} className={`p-[7px] rounded-[7px] transition ${viewMode === "grid" ? "bg-indigo-600" : "text-[#94a3b8] hover:bg-[#f1f5f9]"}`}>
                     <img src={imgGridView} alt="grid" className={`w-[16px] h-[16px] ${viewMode === "grid" ? "brightness-0 invert" : ""}`} />
                   </button>
                 </div>
@@ -345,7 +345,7 @@ export default function DocumentHub() {
 
               {isLoading && (
                 <div className="flex items-center justify-center py-[64px]">
-                  <svg className="w-7 h-7 animate-spin text-[#6366f1]" fill="none" viewBox="0 0 24 24">
+                  <svg className="w-7 h-7 animate-spin text-indigo-600" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
@@ -391,14 +391,14 @@ export default function DocumentHub() {
                   ))}
                 </div>
                 <button onClick={() => navigate(`/applications/${requirements.application_id}`)}
-                        className="mt-[12px] w-full text-center text-[#6366f1] text-[12px] font-medium hover:underline">
+                        className="mt-[12px] w-full text-center text-indigo-600 text-[12px] font-medium hover:underline">
                   View Application Detail →
                 </button>
               </div>
             ) : activeFilter !== "all" ? (
               <div className="bg-white border border-[#f1f5f9] rounded-[16px] shadow-[0px_1px_4px_rgba(0,0,0,0.04)] p-[20px]">
                 <div className="flex items-center justify-center py-[24px]">
-                  <svg className="w-5 h-5 animate-spin text-[#6366f1]" fill="none" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 animate-spin text-indigo-600" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
@@ -424,7 +424,7 @@ export default function DocumentHub() {
                   ))}
                 </div>
               )}
-              <button className="mt-[16px] w-full text-center text-[#6366f1] text-[12px] font-medium hover:underline">View All Activity</button>
+              <button className="mt-[16px] w-full text-center text-indigo-600 text-[12px] font-medium hover:underline">View All Activity</button>
             </div>
           </div>
         </div>

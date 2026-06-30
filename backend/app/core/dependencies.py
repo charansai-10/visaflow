@@ -20,14 +20,20 @@ class CurrentUserData(BaseModel):
     user_id: uuid.UUID
     roles: list[str]
 
+    email: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    phone: str | None = None
+    profile: str | None = None
+
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> CurrentUserData:
     try:
         payload = decode_token(token)
 
-        user_id = payload.get("sub")   
-        roles = payload.get("roles", [])  
+        user_id = payload.get("sub")
+        roles = payload.get("roles", [])
         token_type = payload.get("type")
 
         if not user_id or token_type != "access":
@@ -35,7 +41,12 @@ async def get_current_user(
 
         return CurrentUserData(
             user_id=uuid.UUID(user_id),
-            roles=roles
+            roles=roles,
+            email=payload.get("email"),
+            first_name=payload.get("first_name"),
+            last_name=payload.get("last_name"),
+            phone=payload.get("phone"),
+            profile=payload.get("profile"),
         )
 
     except (JWTError, ValueError, KeyError):

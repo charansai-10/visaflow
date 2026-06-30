@@ -85,7 +85,7 @@ export default function ForgotPassword() {
               {/* Step 1 — active */}
               <div className="flex items-center gap-[8px]">
                 <div
-                  className="w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 drop-shadow-[0px_2px_2px_rgba(79,70,229,0.2),0px_4px_3px_rgba(79,70,229,0.2)] bg-[#4f46e5]"
+                  className="w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 drop-shadow-[0px_2px_2px_rgba(79,70,229,0.2),0px_4px_3px_rgba(79,70,229,0.2)] bg-indigo-600"
                 >
                   <span
                     className="text-white text-[14px] font-semibold tracking-[-0.5px] leading-[20px]"
@@ -93,7 +93,7 @@ export default function ForgotPassword() {
                   >1</span>
                 </div>
                 <span
-                  className="text-[#4f46e5] text-[14px] font-medium tracking-[-0.5px] leading-[20px]"
+                  className="text-indigo-600 text-[14px] font-medium tracking-[-0.5px] leading-[20px]"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >Email</span>
               </div>
@@ -174,7 +174,7 @@ export default function ForgotPassword() {
                     "w-full h-[53px] bg-[#f9fafb] border rounded-[12px]",
                     "pl-[44px] pr-[16px] py-[14px]",
                     "text-[#111827] text-[15px] font-normal tracking-[-0.5px] leading-[23px]",
-                    "focus:outline-none focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] transition",
+                    "focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-500 transition",
                     "placeholder:text-[#9ca3af]",
                     "disabled:opacity-60 disabled:cursor-not-allowed",
                     error ? "border-[#ef4444]" : "border-[#e5e7eb]",
@@ -267,7 +267,7 @@ export default function ForgotPassword() {
         </p>
         <a
           href="mailto:support@visaflow.com"
-          className="text-[#4f46e5] text-[16px] font-medium tracking-[-0.5px] leading-[24px] text-center hover:underline"
+          className="text-indigo-600 text-[16px] font-medium tracking-[-0.5px] leading-[24px] text-center hover:underline"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           Contact Support

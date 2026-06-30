@@ -24,7 +24,7 @@ import io
 
 from app.core.dependencies import Current_User, DBSession
 from app.core.core_permissions import PermissionChecker
-from app.schemas.visa_type import (
+from app.schemas.employee.visa_type import (
     VisaTypeCreate,
     VisaTypeExportRow,
     VisaTypeListResponse,
@@ -33,7 +33,7 @@ from app.schemas.visa_type import (
     VisaTypeToggle,
     VisaTypeUpdate,
 )
-from app.services.visa_type_service import (
+from app.services.employee.visa_type_service import (
     list_visa_types,
     service_create_visa_type,
     service_delete_visa_type,

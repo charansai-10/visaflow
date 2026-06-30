@@ -1,8 +1,8 @@
 // src/pages/employee/DocumentUpload.tsx
-import documentsApi        from "../../api/documents.api";
+import documentsApi        from "../../api/employee/documents.api";
 import { useRef, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useApplication, useApplicationTasks } from "../../hooks/useApplications";
+import { useApplication, useApplicationTasks } from "../../hooks/employee/useApplications";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 import imgProgressIcon from "../../assets/icons/docup-progress-icon.svg";
@@ -371,10 +371,10 @@ export default function DocumentUpload() {
         </div>
         <div className="bg-[#f3f4f6] h-[12px] sm:h-[16px] rounded-full w-full overflow-hidden">
           <div className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${progressPct}%`, backgroundImage: "linear-gradient(to right, #2563eb, #7c3aed)" }} />
+            style={{ width: `${progressPct}%`, backgroundImage: "linear-gradient(to right, var(--theme-primary), var(--theme-gradient-end))" }} />
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[#4f46e5] text-[13px] sm:text-[14px] font-medium leading-[20px]">{progressPct}% Complete</span>
+          <span className="text-indigo-600 text-[13px] sm:text-[14px] font-medium leading-[20px]">{progressPct}% Complete</span>
           <span className="text-[#6b7280] text-[13px] sm:text-[14px] font-medium leading-[20px]">100%</span>
         </div>
       </div>
@@ -440,7 +440,7 @@ export default function DocumentUpload() {
                        rounded-[8px] text-white text-[14px] sm:text-[16px] font-medium leading-[24px]
                        shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)] hover:opacity-90 transition
                        disabled:opacity-60 whitespace-nowrap"
-            style={{ backgroundImage: "linear-gradient(to right, #2563eb, #7c3aed)" }}>
+            style={{ backgroundImage: "linear-gradient(to right, var(--theme-primary), var(--theme-gradient-end))" }}>
             {submitting ? "Submitting…" : "Submit for Review"}
           </button>
         </div>

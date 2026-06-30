@@ -173,12 +173,12 @@ export default function ResetPasswordOTP() {
               </div>
 
               {/* Connector — indigo (step 1 done) */}
-              <div className="w-[32px] h-[2px] rounded-full bg-[#4f46e5] shrink-0" />
+              <div className="w-[32px] h-[2px] rounded-full bg-indigo-600 shrink-0" />
 
               {/* Step 2 — active */}
               <div className="flex items-center gap-[8px]">
                 <div
-                  className="w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 bg-[#4f46e5] drop-shadow-[0px_2px_2px_rgba(79,70,229,0.2),0px_4px_3px_rgba(79,70,229,0.2)]"
+                  className="w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 bg-indigo-600 drop-shadow-[0px_2px_2px_rgba(79,70,229,0.2),0px_4px_3px_rgba(79,70,229,0.2)]"
                 >
                   <span
                     className="text-white text-[14px] font-semibold tracking-[-0.5px] leading-[20px]"
@@ -186,7 +186,7 @@ export default function ResetPasswordOTP() {
                   >2</span>
                 </div>
                 <span
-                  className="text-[#4f46e5] text-[14px] font-medium tracking-[-0.5px] leading-[20px]"
+                  className="text-indigo-600 text-[14px] font-medium tracking-[-0.5px] leading-[20px]"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >Verify</span>
               </div>
@@ -260,9 +260,9 @@ export default function ResetPasswordOTP() {
                     error
                       ? "border-[#ef4444] bg-[#fef2f2]"
                       : i === 0 && digits[i] === "" && digits.every(d => d === "")
-                        ? "bg-white border-[#4f46e5]"           // first box — indigo border (Figma active state)
+                        ? "bg-white border-indigo-600"           // first box — indigo border (Figma active state)
                         : digits[i]
-                          ? "bg-white border-[#4f46e5]"         // filled — indigo border
+                          ? "bg-white border-indigo-600"         // filled — indigo border
                           : "bg-[#f9fafb] border-[#e5e7eb]",   // empty — gray border
                   ].join(" ")}
                   style={{ fontFamily: "Inter, sans-serif" }}
@@ -341,7 +341,7 @@ export default function ResetPasswordOTP() {
                       type="button"
                       onClick={handleResend}
                       disabled={resending}
-                      className="text-[#4f46e5] text-[14px] font-medium tracking-[-0.5px] hover:underline disabled:opacity-50"
+                      className="text-indigo-600 text-[14px] font-medium tracking-[-0.5px] hover:underline disabled:opacity-50"
                       style={{ fontFamily: "Inter, sans-serif" }}
                     >
                       {resending ? "Resending…" : "Resend code"}
@@ -352,7 +352,7 @@ export default function ResetPasswordOTP() {
                 {/* Change email address */}
                 <Link
                   to="/forgot-password"
-                  className="text-[#6b7280] text-[14px] font-medium tracking-[-0.5px] leading-[21px] text-center hover:text-[#4f46e5] transition"
+                  className="text-[#6b7280] text-[14px] font-medium tracking-[-0.5px] leading-[21px] text-center hover:text-indigo-700 transition"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Change email address
@@ -373,7 +373,7 @@ export default function ResetPasswordOTP() {
         </p>
         <a
           href="mailto:support@visaflow.com"
-          className="text-[#4f46e5] text-[16px] font-medium tracking-[-0.5px] leading-[24px] text-center hover:underline"
+          className="text-indigo-600 text-[16px] font-medium tracking-[-0.5px] leading-[24px] text-center hover:underline"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           Contact Support
