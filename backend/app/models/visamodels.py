@@ -1306,11 +1306,14 @@ class Notification(Base):
              "document_approved", "case_status_updated", "participant_added",
              "document_comment", "weekly_summary", "security_alert",
              "payment_receipt", "immigration_news",
+             "approval_pending", "approval_resolved", "compliance_alert",
+             "employee_onboarded", "employee_profile_updated",
              name="notification_type_enum"),
         nullable=False
     )
     category = Column(
         Enum("case_update", "deadline", "news", "security", "billing",
+             "approval", "compliance", "employee",
              name="notification_category_enum"),
         nullable=False
     )
@@ -1387,6 +1390,7 @@ class NotificationPreferences(Base):
     notify_security_alerts  = Column(Boolean, default=True, nullable=False)
     notify_billing          = Column(Boolean, default=True, nullable=False)
     notify_weekly_summary   = Column(Boolean, default=True, nullable=False)
+    notify_compliance_alerts = Column(Boolean, default=True, nullable=False)
 
     created_by  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     modified_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
@@ -3315,3 +3319,4 @@ class IntakeImmigrationHistory(Base):
                          onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     session = relationship("ClientIntakeSession", back_populates="intake_data")
+

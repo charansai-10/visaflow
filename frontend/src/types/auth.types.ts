@@ -62,7 +62,7 @@ export interface LoginBody {
 }
 
 export interface SSOBody {
-  provider:        'google' | 'microsoft' | 'apple';
+  provider:        'google' | 'microsoft' | 'linkedin';
   provider_token:  string;
   terms_accepted?: boolean;
 }

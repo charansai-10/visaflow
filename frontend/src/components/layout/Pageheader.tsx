@@ -1,7 +1,7 @@
 // src/components/layout/PageHeader.tsx
-import { useNavigate } from 'react-router-dom';
-import { Search, Bell } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useState } from 'react';
+import { NotificationBell } from './NotificationBell';
 
 interface PageHeaderProps {
   title:              string;
@@ -12,7 +12,6 @@ interface PageHeaderProps {
   searchPlaceholder?: string;
   onSearchChange?:    (value: string) => void;
   showBell?:          boolean;
-  bellDot?:           boolean;
 }
 
 export function PageHeader({
@@ -24,9 +23,7 @@ export function PageHeader({
   searchPlaceholder = 'Search...',
   onSearchChange,
   showBell          = true,
-  bellDot           = true,
 }: PageHeaderProps) {
-  const navigate = useNavigate();
   const [localSearch, setLocalSearch] = useState('');
 
   const searchVal   = onSearchChange ? searchValue : localSearch;
@@ -39,8 +36,6 @@ export function PageHeader({
     <header className={[
       'bg-[rgba(255,255,255,0.9)] border-b border-[#f1f5f9] backdrop-blur-sm',
       'shrink-0 sticky top-0 z-10',
-      // On mobile DashboardLayout already shows a top bar — so PageHeader
-      // sits BELOW it. On desktop (lg+) DashboardLayout bar is hidden.
       'flex flex-wrap items-center gap-[12px]',
       'min-h-[56px] lg:min-h-[72px]',
       'px-[16px] sm:px-[24px] lg:px-[32px]',
@@ -87,26 +82,8 @@ export function PageHeader({
           </div>
         )}
 
-        {/* Bell */}
-        {showBell && (
-          <button
-            type="button"
-            onClick={() => navigate('/notifications')}
-            aria-label="Notifications"
-            className="bg-white border border-[#e2e8f0] drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)]
-                       flex items-center justify-center relative rounded-[10px] sm:rounded-[12px]
-                       size-[34px] sm:size-[38px] lg:size-[40px]
-                       hover:bg-[#f8fafc] transition-colors shrink-0"
-          >
-            <Bell size={14} className="text-[#64748b]" />
-            {bellDot && (
-              <span className="absolute bg-indigo-600 border border-white
-                               h-[6px] w-[6px] sm:h-[8px] sm:w-[8px]
-                               rounded-full top-[6px] right-[7px]
-                               sm:top-[8px] sm:right-[9px]" />
-            )}
-          </button>
-        )}
+        {/* Bell — now a real dropdown showing recent notifications */}
+        {showBell && <NotificationBell />}
 
         {/* Actions slot */}
         {actions}

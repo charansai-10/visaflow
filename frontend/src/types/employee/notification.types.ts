@@ -1,15 +1,22 @@
-// src/types/notification.types.ts
+// src/types/employee/notification.types.ts
+// Shared across employee, hr, attorney, app_admin — same backend enum.
 import type { AxiosError } from "axios";
 
 export type NotificationType =
   | "missing_document" | "deadline_approaching" | "policy_update"
   | "document_approved" | "case_status_updated" | "participant_added"
   | "document_comment" | "weekly_summary" | "security_alert"
-  | "payment_receipt" | "immigration_news";
+  | "payment_receipt" | "immigration_news"
+  // ── HR-facing types (added) ────────────────────────────────────────────────
+  | "approval_pending" | "approval_resolved"
+  | "compliance_alert"
+  | "employee_onboarded" | "employee_profile_updated";
 
 // Exact DB enum values from notification_category_enum
 export type NotificationCategory =
-  | "case_update" | "deadline" | "news" | "security" | "billing";
+  | "case_update" | "deadline" | "news" | "security" | "billing"
+  // ── HR-facing categories (added) ───────────────────────────────────────────
+  | "approval" | "compliance" | "employee";
 
 export type TabFilter = "all" | NotificationCategory;
 
@@ -37,7 +44,9 @@ export interface NotificationPreferences {
   notify_case_updates: boolean; notify_deadlines: boolean;
   notify_document_updates: boolean; notify_news: boolean;
   notify_security_alerts: boolean; notify_billing: boolean;
-  notify_weekly_summary: boolean; updated_at: string;
+  notify_weekly_summary: boolean;
+  notify_compliance_alerts: boolean;   // ← added — matches backend patch
+  updated_at: string;
 }
 
 export interface NotificationListResponse {
@@ -54,6 +63,7 @@ export interface UpdatePreferencesRequest {
   notify_document_updates?: boolean; notify_news?: boolean;
   notify_security_alerts?: boolean; notify_billing?: boolean;
   notify_weekly_summary?: boolean;
+  notify_compliance_alerts?: boolean;  // ← added
 }
 export interface UseNotificationsReturn {
   notifications: Notification[]; total: number; unreadCount: number;

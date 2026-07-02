@@ -46,10 +46,10 @@
 //   },
 //   (error) => Promise.reject(error)
 // );
-
 import { useAuthStore } from '../store/authStore';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
+  
 
 declare module 'axios' {
   interface InternalAxiosRequestConfig {
@@ -57,10 +57,12 @@ declare module 'axios' {
   }
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const instance = axios.create({
-  baseURL:         '/api/v1',
+  baseURL: API_BASE_URL,
   headers: {
-    'Content-Type':               'application/json',
+    'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true',
   },
   withCredentials: true,
@@ -97,12 +99,13 @@ instance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Silent refresh — browser sends httpOnly cookie automatically
+        
         const res = await axios.post(
-          '/api/v1/auth/refresh',
+          `${API_BASE_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );
+
         const { access_token } = res.data;
         useAuthStore.getState().setTokens({ access_token });
         originalRequest.headers.Authorization = `Bearer ${access_token}`;

@@ -1,284 +1,3 @@
-# # =============================================================================
-# # app/services/notification_service.py
-# # Business logic for Notifications (TABLE 25) + Preferences (TABLE 26)
-# # =============================================================================
-# from __future__ import annotations
-
-# import uuid
-# from datetime import datetime, timedelta, timezone
-# from typing import List, Optional
-
-# from sqlalchemy import select, func, and_, update
-# from sqlalchemy.ext.asyncio import AsyncSession
-
-# from app.models.visamodels import Notification, NotificationPreferences
-# from app.schemas.notification_schemas import (
-#     NotificationListResponse,
-#     NotificationOut,
-#     NotificationStatsResponse,
-#     MarkReadResponse,
-#     UpdatePreferencesRequest,
-#     NotificationPreferencesOut,
-# )
-
-# PAGE_SIZE_DEFAULT = 20
-
-
-# def _now() -> datetime:
-#     return datetime.now(timezone.utc)
-
-
-# # =============================================================================
-# # LIST
-# # =============================================================================
-
-# async def list_notifications(
-#     db:       AsyncSession,
-#     user_id:  uuid.UUID,
-#     *,
-#     category: Optional[str] = None,
-#     is_read:  Optional[bool] = None,
-#     priority: Optional[str] = None,
-#     limit:    int = PAGE_SIZE_DEFAULT,
-#     offset:   int = 0,
-# ) -> NotificationListResponse:
-
-#     filters = [
-#         Notification.user_id     == user_id,
-#         Notification.is_dismissed == False,  # noqa: E712
-#     ]
-#     if category: filters.append(Notification.category == category)
-#     if is_read  is not None: filters.append(Notification.is_read == is_read)
-#     if priority: filters.append(Notification.priority == priority)
-
-#     # Total matching
-#     count_q = select(func.count()).select_from(Notification).where(and_(*filters))
-#     total   = (await db.scalar(count_q)) or 0
-
-#     # Unread count (always for the user, regardless of filter)
-#     unread_q = select(func.count()).select_from(Notification).where(
-#         and_(Notification.user_id == user_id,
-#              Notification.is_read == False,      # noqa: E712
-#              Notification.is_dismissed == False) # noqa: E712
-#     )
-#     unread_count = (await db.scalar(unread_q)) or 0
-
-#     # Urgent count
-#     urgent_q = select(func.count()).select_from(Notification).where(
-#         and_(Notification.user_id  == user_id,
-#              Notification.priority == "urgent",
-#              Notification.is_dismissed == False) # noqa: E712
-#     )
-#     urgent_count = (await db.scalar(urgent_q)) or 0
-
-#     # Paginated rows — newest first
-#     rows_q = (
-#         select(Notification)
-#         .where(and_(*filters))
-#         .order_by(Notification.created_at.desc())
-#         .limit(limit)
-#         .offset(offset)
-#     )
-#     result = await db.execute(rows_q)
-#     items  = list(result.scalars().all())
-
-#     return NotificationListResponse(
-#         items        = [NotificationOut.model_validate(n) for n in items],
-#         total        = total,
-#         unread_count = unread_count,
-#         urgent_count = urgent_count,
-#         has_more     = (offset + limit) < total,
-#     )
-
-
-# # =============================================================================
-# # STATS (for the 4 stat cards)
-# # =============================================================================
-
-# async def get_notification_stats(
-#     db:      AsyncSession,
-#     user_id: uuid.UUID,
-# ) -> NotificationStatsResponse:
-
-#     base = and_(
-#         Notification.user_id     == user_id,
-#         Notification.is_dismissed == False,  # noqa: E712
-#     )
-#     week_ago = _now() - timedelta(days=7)
-
-#     urgent_count = (await db.scalar(
-#         select(func.count()).select_from(Notification)
-#         .where(and_(base, Notification.priority == "urgent"))
-#     )) or 0
-
-#     unread_count = (await db.scalar(
-#         select(func.count()).select_from(Notification)
-#         .where(and_(base, Notification.is_read == False))  # noqa: E712
-#     )) or 0
-
-#     week_count = (await db.scalar(
-#         select(func.count()).select_from(Notification)
-#         .where(and_(base, Notification.created_at >= week_ago))
-#     )) or 0
-
-#     news_count = (await db.scalar(
-#         select(func.count()).select_from(Notification)
-#         .where(and_(base, Notification.category == "news"))
-#     )) or 0
-
-#     return NotificationStatsResponse(
-#         urgent_count = urgent_count,
-#         unread_count = unread_count,
-#         week_count   = week_count,
-#         news_count   = news_count,
-#     )
-
-
-# # =============================================================================
-# # MARK READ / DISMISS
-# # =============================================================================
-
-# async def mark_notification_read(
-#     db:      AsyncSession,
-#     user_id: uuid.UUID,
-#     notif_id: uuid.UUID,
-# ) -> MarkReadResponse:
-#     result = await db.execute(
-#         update(Notification)
-#         .where(and_(
-#             Notification.id      == notif_id,
-#             Notification.user_id == user_id,
-#             Notification.is_read == False,  # noqa: E712
-#         ))
-#         .values(is_read=True, read_at=_now())
-#         .returning(Notification.id)
-#     )
-#     updated = len(result.all())
-#     await db.flush()
-#     return MarkReadResponse(updated=updated, message="Marked as read.")
-
-
-# async def mark_all_read(
-#     db:       AsyncSession,
-#     user_id:  uuid.UUID,
-#     category: Optional[str] = None,
-# ) -> MarkReadResponse:
-#     filters = [
-#         Notification.user_id == user_id,
-#         Notification.is_read == False,  # noqa: E712
-#     ]
-#     if category:
-#         filters.append(Notification.category == category)
-
-#     result = await db.execute(
-#         update(Notification)
-#         .where(and_(*filters))
-#         .values(is_read=True, read_at=_now())
-#         .returning(Notification.id)
-#     )
-#     updated = len(result.all())
-#     await db.flush()
-#     return MarkReadResponse(updated=updated, message=f"Marked {updated} notifications as read.")
-
-
-# async def dismiss_notification(
-#     db:       AsyncSession,
-#     user_id:  uuid.UUID,
-#     notif_id: uuid.UUID,
-# ) -> MarkReadResponse:
-#     result = await db.execute(
-#         update(Notification)
-#         .where(and_(
-#             Notification.id      == notif_id,
-#             Notification.user_id == user_id,
-#         ))
-#         .values(is_dismissed=True, dismissed_at=_now(), is_read=True, read_at=_now())
-#         .returning(Notification.id)
-#     )
-#     updated = len(result.all())
-#     await db.flush()
-#     return MarkReadResponse(updated=updated, message="Dismissed.")
-
-
-# # =============================================================================
-# # PREFERENCES
-# # =============================================================================
-
-# async def get_preferences(
-#     db:      AsyncSession,
-#     user_id: uuid.UUID,
-# ) -> NotificationPreferencesOut:
-#     prefs = await db.scalar(
-#         select(NotificationPreferences)
-#         .where(NotificationPreferences.user_id == user_id)
-#     )
-#     if not prefs:
-#         # Auto-create with defaults if first time
-#         prefs = NotificationPreferences(
-#             id          = uuid.uuid4(),
-#             user_id     = user_id,
-#             created_by  = user_id,
-#             modified_by = user_id,
-#         )
-#         db.add(prefs)
-#         await db.flush()
-#         await db.refresh(prefs)
-#     return NotificationPreferencesOut.model_validate(prefs)
-
-
-# async def update_preferences(
-#     db:      AsyncSession,
-#     user_id: uuid.UUID,
-#     data:    UpdatePreferencesRequest,
-# ) -> NotificationPreferencesOut:
-#     prefs = await db.scalar(
-#         select(NotificationPreferences)
-#         .where(NotificationPreferences.user_id == user_id)
-#     )
-#     if not prefs:
-#         prefs = NotificationPreferences(
-#             id      = uuid.uuid4(),
-#             user_id = user_id,
-#             created_by  = user_id,
-#             modified_by = user_id,
-#         )
-#         db.add(prefs)
-
-#     payload = {k: v for k, v in data.model_dump().items() if v is not None}
-#     payload["modified_by"] = user_id
-#     for k, v in payload.items():
-#         if hasattr(prefs, k):
-#             setattr(prefs, k, v)
-
-#     await db.flush()
-#     await db.refresh(prefs)
-#     return NotificationPreferencesOut.model_validate(prefs)
-
-# =============================================================================
-# app/services/notification_service.py
-#
-# Core notification service for VisaFlow.
-# Handles:
-#   - In-app notification CRUD (list, stats, mark read, dismiss)
-#   - Notification preferences (get / upsert)
-#   - Event-driven notification creation (case created, assigned, status change,
-#     document uploaded/verified/rejected, deadline approaching)
-#   - Email dispatch respecting user preferences
-#
-# Usage — call fire_* helpers from other services after db.flush():
-#
-#   from app.services.notification_service import (
-#       fire_case_created,
-#       fire_case_assigned_to_hr,
-#       fire_case_status_changed,
-#       fire_document_uploaded,
-#       fire_document_verified,
-#       fire_document_rejected,
-#   )
-#
-#   # Inside application_services.py after creating the application:
-#   await fire_case_created(db, application, actor_id=current_user_id)
-# =============================================================================
 
 from __future__ import annotations
 
@@ -1227,3 +946,230 @@ async def fire_deadline_approaching(
         logger.exception(
             "fire_deadline_approaching failed for deadline %s", deadline.id
         )
+
+
+
+async def fire_approval_pending(
+    db: AsyncSession,
+    application: Application,
+    *,
+    hr_id: uuid.UUID,
+    employee_name: str,
+    deadline_days: Optional[int] = None,
+) -> None:
+    """
+    Fires when a case reaches a stage requiring HR approval before
+    attorney filing (e.g. after employee + attorney complete their parts).
+    Notifies the assigned HR user.
+    """
+    try:
+        case_ref = application.application_number
+        app_url = f"/employer/cases/{application.id}"
+ 
+        deadline_clause = (
+            f" Deadline in {deadline_days} day(s)." if deadline_days is not None else ""
+        )
+ 
+        notif = await _create_notification(
+            db,
+            user_id=hr_id,
+            notification_type="approval_pending",
+            category="approval",
+            priority="urgent" if (deadline_days is not None and deadline_days <= 3) else "high",
+            title=f"{employee_name}'s petition awaiting your approval",
+            body=(
+                f"Case {case_ref} for {employee_name} is ready for HR review "
+                f"before attorney filing.{deadline_clause}"
+            ),
+            application_id=application.id,
+            case_reference=case_ref,
+            actor_label=employee_name,
+            cta_primary_label="Review Now",
+            cta_primary_url=app_url,
+            cta_secondary_label="Delegate",
+        )
+        await _maybe_send_email(
+            db, notif, hr_id,
+            subject=f"VisaFlow — Approval Needed: {case_ref}",
+            body_text=(
+                f"Hi,\n\n{employee_name}'s case {case_ref} needs your approval"
+                f"{deadline_clause}\n\nReview it: {app_url}\n\nVisaFlow Team"
+            ),
+            category_pref_field="notify_case_updates",
+        )
+    except Exception:
+        logger.exception("fire_approval_pending failed for application %s", application.id)
+ 
+ 
+async def fire_approval_resolved(
+    db: AsyncSession,
+    application: Application,
+    *,
+    employee_id: uuid.UUID,
+    decision: str,          # "approved" | "rejected" | "changes_requested"
+    actor_id: uuid.UUID,
+) -> None:
+    """
+    Fires when HR's approval decision on a case is finalized.
+    Notifies the employee. (Distinct from fire_hr_approval_changed which
+    already exists — kept separate so callers can choose the lighter-weight
+    'approval' category event vs the full case_update event.)
+    """
+    try:
+        actor = await _get_user(db, actor_id)
+        actor_label = f"{actor.first_name} {actor.last_name}" if actor else "HR"
+        case_ref = application.application_number
+        app_url = f"/applications/{application.id}"
+ 
+        labels = {
+            "approved":          ("Your petition was approved by HR", "high"),
+            "rejected":          ("Your petition was rejected by HR", "urgent"),
+            "changes_requested": ("HR requested changes to your petition", "urgent"),
+        }
+        title, priority = labels.get(decision, (f"HR decision on {case_ref}", "medium"))
+ 
+        notif = await _create_notification(
+            db,
+            user_id=employee_id,
+            notification_type="approval_resolved",
+            category="approval",
+            priority=priority,
+            title=title,
+            body=f"{actor_label} has resolved the HR review for case {case_ref}.",
+            application_id=application.id,
+            case_reference=case_ref,
+            actor_id=actor_id,
+            actor_label=actor_label,
+            cta_primary_label="View Case",
+            cta_primary_url=app_url,
+        )
+        await _maybe_send_email(
+            db, notif, employee_id,
+            subject=f"VisaFlow — HR Decision on {case_ref}",
+            body_text=f"Hi,\n\n{title}.\n\nView it: {app_url}\n\nVisaFlow Team",
+            category_pref_field="notify_case_updates",
+        )
+    except Exception:
+        logger.exception("fire_approval_resolved failed for application %s", application.id)
+ 
+ 
+async def fire_employee_onboarded(
+    db: AsyncSession,
+    *,
+    hr_id: uuid.UUID,
+    employee_id: uuid.UUID,
+    employee_name: str,
+) -> None:
+    """
+    Fires when an invited employee completes profile setup and joins the
+    company roster. Notifies HR so they can assign an attorney / start a case.
+    """
+    try:
+        notif = await _create_notification(
+            db,
+            user_id=hr_id,
+            notification_type="employee_onboarded",
+            category="employee",
+            priority="high",
+            title="New employee accepted invitation",
+            body=(
+                f"{employee_name} accepted your company invite and completed "
+                "profile setup. Assign a case attorney to get started."
+            ),
+            actor_id=employee_id,
+            actor_label=employee_name,
+            cta_primary_label="View Employee",
+            cta_primary_url="/employer/employees",
+        )
+        await _maybe_send_email(
+            db, notif, hr_id,
+            subject=f"VisaFlow — {employee_name} Joined Your Company",
+            body_text=(
+                f"Hi,\n\n{employee_name} accepted your invitation and completed "
+                f"setup.\n\nView the employee roster: /employer/employees\n\nVisaFlow Team"
+            ),
+            category_pref_field="notify_case_updates",
+        )
+    except Exception:
+        logger.exception("fire_employee_onboarded failed for employee %s", employee_id)
+ 
+ 
+async def fire_employee_profile_updated(
+    db: AsyncSession,
+    *,
+    hr_id: uuid.UUID,
+    employee_id: uuid.UUID,
+    employee_name: str,
+    fields_changed: Optional[list[str]] = None,
+) -> None:
+    """Fires when an employee updates personal/employment info HR may need to review."""
+    try:
+        changed = ", ".join(fields_changed) if fields_changed else "their profile"
+        notif = await _create_notification(
+            db,
+            user_id=hr_id,
+            notification_type="employee_profile_updated",
+            category="employee",
+            priority="low",
+            title="Employee profile updated",
+            body=f"{employee_name} updated {changed}. Review changes if needed.",
+            actor_id=employee_id,
+            actor_label=employee_name,
+            cta_primary_label="View Employee",
+            cta_primary_url="/employer/employees",
+        )
+        # Low priority — no email by default, in-app only
+    except Exception:
+        logger.exception(
+            "fire_employee_profile_updated failed for employee %s", employee_id
+        )
+ 
+ 
+async def fire_compliance_alert(
+    db: AsyncSession,
+    *,
+    hr_id: uuid.UUID,
+    title: str,
+    body: str,
+    affected_count: Optional[int] = None,
+    cta_url: str = "/employer/employees",
+    priority: str = "urgent",
+) -> None:
+    """
+    Generic compliance alert trigger — used for I-9 expirations, LCA posting
+    deadlines, work authorization expiry, etc. Called by a scheduled job
+    (similar pattern to fire_deadline_approaching) that scans for upcoming
+    compliance deadlines across the HR's employee roster.
+ 
+    Example call site (in a daily scheduler job):
+        await fire_compliance_alert(
+            db, hr_id=hr.id,
+            title="I-9 Expiring — 3 Employees",
+            body="3 employees have I-9 employment authorization expiring within 30 days.",
+            affected_count=3,
+        )
+    """
+    try:
+        full_body = body
+        if affected_count is not None:
+            full_body += f" ({affected_count} employee{'s' if affected_count != 1 else ''} affected.)"
+ 
+        notif = await _create_notification(
+            db,
+            user_id=hr_id,
+            notification_type="compliance_alert",
+            category="compliance",
+            priority=priority,
+            title=title,
+            body=full_body,
+            cta_primary_label="View Employees",
+            cta_primary_url=cta_url,
+        )
+        await _maybe_send_email(
+            db, notif, hr_id,
+            subject=f"VisaFlow Compliance Alert — {title}",
+            body_text=f"Hi,\n\n{full_body}\n\nView details: {cta_url}\n\nVisaFlow Team",
+            category_pref_field="notify_compliance_alerts",
+        )
+    except Exception:
+        logger.exception("fire_compliance_alert failed for hr %s", hr_id)

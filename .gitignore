@@ -1,7 +1,14 @@
-.DS_Store
+cat >> .gitignore << 'EOF'
+
+# Env files — never commit
 .env
-__pycache__/
-node_modules/
-dist/
-*.pyc
-.claude/
+.env.local
+.env.staging
+.env.production
+frontend/.env
+frontend/.env.staging
+frontend/.env.production
+backend/.env
+backend/.env.staging
+backend/.env.production
+EOF

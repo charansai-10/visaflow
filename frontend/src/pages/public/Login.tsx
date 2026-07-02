@@ -395,7 +395,7 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useMsal } from "@azure/msal-react";
 import { authApi } from "../../api/auth.api";
-import { callSSOEndpoint } from "../../lib/sso";
+import { callSSOEndpoint, type SSOProvider } from "../../lib/sso";
 import { useAuthStore } from '../../store/authStore';
 import imgLogoIcon     from "../../assets/icons/plane-icon.svg";
 import imgShieldIcon   from "../../assets/icons/shield-icon.svg";
@@ -470,7 +470,7 @@ export default function Login() {
     }
   }
 
-  async function handleSSOSuccess(provider: string, token: string) {
+  async function handleSSOSuccess(provider: SSOProvider, token: string) {
     setSsoLoading(provider);
     setSsoError(null);
     try {

@@ -3,7 +3,7 @@ import type {
   BookConsultationData,
   CreateConsultationBookingRequest,
   CreateConsultationBookingResponse,
-} from "../types/bookConsultation.types";
+} from "../../types/employee/bookConsultation.types";
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8001";
 

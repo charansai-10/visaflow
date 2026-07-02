@@ -38,3 +38,4 @@ slowapi==0.1.9
 passlib
 aioboto3
 apscheduler
+alembic

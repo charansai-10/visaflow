@@ -1,8 +1,8 @@
-
-
 // src/lib/sso.ts
 import { PublicClientApplication } from "@azure/msal-browser";
 import { authApi } from "../api/auth.api";
+
+export type SSOProvider = "google" | "microsoft" | "linkedin";
 
 export const msalInstance = new PublicClientApplication({
   auth: {
@@ -13,7 +13,7 @@ export const msalInstance = new PublicClientApplication({
   cache: { cacheLocation: "sessionStorage" },
 });
 
-export async function callSSOEndpoint(provider: string, providerToken: string) {
+export async function callSSOEndpoint(provider: SSOProvider, providerToken: string) {
   return authApi.sso({
     provider,
     provider_token: providerToken,
