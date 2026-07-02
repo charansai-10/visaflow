@@ -122,4 +122,8 @@ npm run dev
 
 ---
 
+<<<<<<< HEAD
 ## 📁 Project Structure
+=======
+## 📁 Project Structure
+>>>>>>> a9c40671f3cd5aa40ad5d38f1698701ac9687064
